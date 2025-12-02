@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if show_login %}Вход в систему</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    
+
+        <article class="login-form">
+            <h2 class="login__title">Авторизация</h2>
+
+            <form method="POST" class="generator__form">
+                <div class="form__group">
+                    <label for="username" class="form__label">e-mail:</label>
+                    <input type="text" id="username" name="username" class="form__input" required>
+                </div>
+
+                <div class="form__group">
+                    <label for="password" class="form__label">Пароль:</label>
+                    <input type="password" id="password" name="password" class="form__input" required>
+                </div>
+
+                <div class="form__group">
+                    <label class="option__label">
+                        <input type="checkbox" name="remember" id="remember" class="option__checkbox">
+                        <span class="option__text">Запомнить меня</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="form__button">
+                    Войти
+                </button>
+
+                <button type="submit" class="form__button">
+                    Забыли пароль
+                </button>
+
+                <button type="submit" class="form__button">
+                    Регистрация
+                </button>
+            </form>
+
+        </article>
+    </main>
+</body>
+</html>
