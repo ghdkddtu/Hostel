@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Регистрация</h1>
+            <a href="{{ url_for('index') }}" class="back-link">← На главную</a>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <main>
+            <article>
+                <form method="POST" class="auth-form">
+
+                    <div class="form-group">
+                        <label for="username">E-mail:</label>
+                        <input type="email" id="username" name="username" class="form__input" required placeholder="Введите ваш e-mail" value="{{ username if username }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="user_name">Имя пользователя:</label>
+                        <input type="text" id="user_name" name="user_name" placeholder="Придумайте имя пользователя" required autofocus value="{{ user_name if user_name }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Телефон:</label>
+                        
+                        <input type="tel" id="phone" name="phone" class="form__input" required placeholder="+7 (XXX) XXX XX XX" value="{{ phone if phone }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Пароль:</label>
+                        <input type="password" id="password" name="password" placeholder="Минимум 6 символов" required minlength="6">
+                        <small>Минимум 6 символов</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm_password">Повтор пароля:</label>
+                        <input type="password" id="confirm_password" name="confirm_password" class="form__input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="option__label">
+                            <input type="checkbox" name="agreement" id="agreement" class="option__checkbox" required>
+                            <span class="option__text">Согласен на обработку персональных данных</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Зарегистрироваться</button>
+
+                    <div class="form-footer">
+                        <p>Уже есть аккаунт? <a href="{{ url_for('login') }}">Войдите</a></p>
+                    </div>
+                </form>
+            </article>
+        </main>
+    </div>
+</body>
+</html>
