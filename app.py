@@ -1,15 +1,16 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 import random, string
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 import sqlite3
 import re
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-12345'
-DB_NAME = 'college.db'
+app.permanent_session_lifetime = timedelta(minutes=30) 
 
+DB_NAME = 'college.db'
 
 def create_users_table():
     connection = sqlite3.connect(DB_NAME)
@@ -65,13 +66,10 @@ def generate_password(length):
     password = ''.join(random.choice(characters) for _ in range(length))
     return password
 
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    if 'username' not in session:
-        return redirect(url_for('login'))
     password = ""
-    if request.method == 'POST':
+    if request.method == 'POST' and 'username' in session:
         try:
             length = int(request.form.get('length', 12))
             if length <= 0:
@@ -80,15 +78,26 @@ def index():
                 password = generate_password(length)
         except ValueError:
             password = "Ошибка: введите целое число"
+
     return render_template('index.html',
                            password=password,
+                           user=session.get('user_info'))
+
+@app.route('/dashboard')
+def dashboard():
+    if 'username' not in session:
+        flash('Для доступа к личному кабинету войдите в систему.', 'warning')
+        return redirect(url_for('login'))
+    
+    return render_template('dashboard.html',
                            user=session.get('user_info'),
                            login_time=session.get('login_time'))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'username' in session:
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard')) 
 
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
@@ -100,25 +109,29 @@ def login():
             session['username'] = username
             session['user_info'] = user
             session['login_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            session['session_id'] = str(uuid.uuid4())[:8]
+            session['session_id'] = str(uuid.uuid4())[:8] 
+            
             session.permanent = True if remember_me else False
+            
             flash(f'Вы успешно вошли в систему, {user["name"]}!', 'success')
-            return redirect(url_for('index'))
+            return redirect(url_for('dashboard'))
         else:
             flash('Неверное имя пользователя (e-mail) или пароль', 'error')
 
-    return render_template('login.html') 
+    return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if 'username' in session:
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard')) 
+
     if request.method == 'POST':
         email = request.form.get('username', '').strip()
         user_name_input = request.form.get('user_name', '').strip()
-        phone = request.form.get('phone', '').strip()
+        phone = request.form.get('phone', '').strip() 
         password = request.form.get('password', '')
         confirm_password = request.form.get('confirm_password', '')
+
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             flash('Пожалуйста, введите корректный e-mail.', 'error')
         elif not user_name_input:
@@ -133,6 +146,7 @@ def register():
                 return redirect(url_for('login'))
             else:
                 flash('Пользователь с таким e-mail уже существует.', 'error')
+
     return render_template('register.html', 
                            username=request.form.get('username', ''),
                            user_name=request.form.get('user_name', ''),
@@ -140,10 +154,11 @@ def register():
 
 @app.route('/logout')
 def logout():
-    username = session.get('username', 'Гость')
+    username = session.get('user_info', {}).get('name', 'Гость')
     session.clear()
     flash(f'Вы вышли из системы. До свидания, {username}!', 'info')
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)
+
